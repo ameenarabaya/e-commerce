@@ -1,0 +1,17 @@
+import { Router } from "express";
+import * as catigoryController from './categories.controller.js';
+import uploadFile, { filesExtensions } from "../../utls/fileUpload.js";
+import { auth } from "../../middleWare/auth.js";
+import subRouter from '../subCategory/subcategory.router.js';
+import { endPoint } from "./category.role.js";
+import asyncHandelr from "../../utls/catcherrorfunction.js";
+import * as categorySchema from './category.validation.js';
+import { validation } from "../../middleWare/validation.js";
+const router = Router();
+router.use('/:id/subCategory',subRouter);
+router.post('/',validation(categorySchema.createCategorySchema),auth(endPoint.create),uploadFile(filesExtensions.image).single('image'),asyncHandelr( catigoryController.createCategory));
+router.get('/',auth(endPoint.get),asyncHandelr(catigoryController.getAll));
+router.get('/Active',auth(endPoint.active),asyncHandelr(catigoryController.getActive));
+router.patch('/:id',validation(categorySchema.updateSchema),auth(endPoint.update),uploadFile(filesExtensions.image).single('image'),asyncHandelr(catigoryController.update));
+router.delete('/:id',validation(categorySchema.deleteSchema),auth(endPoint.delete),asyncHandelr(catigoryController.destroy));
+export default router;

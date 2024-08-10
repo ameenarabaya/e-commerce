@@ -1,0 +1,79 @@
+import { Schema, Types, model } from "mongoose";
+const ProductSchema = new Schema({
+    name:{
+        type: String,
+        require:true,
+        unique:true,
+        trim:true
+    },
+    slug:{
+        type:String,
+        require:true,
+    },
+    description:{
+        type:String,
+        required:true
+    },
+    stock:{
+        type:Number,
+        default:1
+    },
+    price:{
+        type:Number,
+        required:true
+    },
+    discount:{
+        type:Number,
+        default:0
+    },
+    finlePrice:{
+        type:Number,
+        required:true
+    },
+    image:{
+        type:Object,
+        required:true
+    },
+    subImages:[{
+        type:Object,
+        required:true
+    }],
+    sizes:[{
+        type: String,
+        enum:['s','m','lg','xl']
+    }],
+    colors:[String],
+    updatedBy:{
+        type:Types.ObjectId,
+        ref:'User'
+    },
+    createdBy:{
+        type:Types.ObjectId,
+        ref:'User'
+    },
+    status:{
+        type:String,
+        enum:['Active','NotActive'],
+        default:'Active'
+    },
+    categoryId:{
+        type:Types.ObjectId,
+        ref:'Category',
+        required:true
+    },
+    subCategoryId:{
+        type:Types.ObjectId,
+        ref:'subCategory',
+        required:true
+    },
+},{timestamps:true,
+    toJSON:{virtuals:true},
+toObject:{virtuals:true}})
+
+ProductSchema.virtual("reviews",{
+    localField:"_id",
+    foreignField:"productId",
+    ref:"Review"
+})
+const ProductModel = model( 'Product', ProductSchema);
+export default ProductModel;
