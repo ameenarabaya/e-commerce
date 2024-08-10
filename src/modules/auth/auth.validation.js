@@ -8,5 +8,6 @@ import Joi from 'joi';
 })
 
 export const loginInSchema = Joi.object({
-    email:Joi.string().email().required()
+    email:Joi.string().email().required(),
+    password: Joi.string().required().pattern(/^[a-zA-Z0-9]{3,30}$/),
 })
