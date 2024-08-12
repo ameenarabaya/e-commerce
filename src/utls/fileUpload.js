@@ -1,7 +1,8 @@
 import multer from "multer";
 export const filesExtensions = {
     image: ['image/jpg', 'image/jpeg', 'image/png'],
-    pdf: [ 'application/pdf']
+    pdf: [ 'application/pdf'],
+    excel :['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
 };
 const uploadFile = (fileExtensions = [])=>{
     const storage  = multer.diskStorage({});

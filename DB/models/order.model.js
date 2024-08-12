@@ -7,8 +7,12 @@ userId :{
     required:true
 },
 products:[{
+productName:{type:String, required:true},
+unitPrice:{type:Number, required:true},
+finalPrice:{type:Number, required:true},
 productId:{type:Types.ObjectId,ref:'Product'},
-quantity:{type:Number, default:1} 
+quantity:{type:Number, default:1} ,
+discount:{type:Number} 
 }],
 couponId:{
 type:Types.ObjectId,

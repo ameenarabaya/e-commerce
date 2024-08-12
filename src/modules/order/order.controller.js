@@ -5,6 +5,9 @@ import ProductModel from "../../../DB/models/product.model.js";
 import UserModel from "../../../DB/models/user.model.js";
 import Stripe from 'stripe';
 const stripe = new Stripe(process.env.SECRETKEY);
+import createInvoice from "../../utls/pdf.js";
+import asyncHandelr from "../../utls/catcherrorfunction.js";
+import { errorApp } from "../../utls/ErrorClass.js";
 
 export const createOrder = async(req,res)=>{
     const {couponName} = req.body;
@@ -34,10 +37,10 @@ for(let product of req.body.products){
             return res.status(400).json({message:"product out of stock"});
         }
            product = product.toObject();
-        product.name = checkProduct.name;
-        product.price = checkProduct.price;
+        product.productName = checkProduct.name;
+        product.unitPrice = checkProduct.price;
         product.discount = checkProduct.discount;
-        product.finalPrice =checkProduct.finlePrice * product.quantity; 
+        product.finalPrice =(checkProduct.price * product.quantity);
         subTotal += product.finalPrice;
         finalProductList.push(product);
 }
@@ -51,22 +54,21 @@ if(! req.body.phoneNumber){
     req.body.phoneNumber = user.phone;
 }
 const user  = await UserModel.findOne({_id:req.user._id});
-const session = await stripe.checkout.sessions.create({
-line_items:[{
-    price_data:{
-        currency:'USD',
-        unit_amount:subTotal - ((subTotal * req.body.coupon?.amount ||0 )/100),
-        product_data:{
-            name:user.userName,
-        },
-    },
-    quantity:1
-}],
-mode:'payment',
-success_url: `http://www.facebook.com`,
-cancel_url: `http://www.youtube.com`,
-})
-return res.json(session);
+// const session = await stripe.checkout.sessions.create({
+// line_items:[{
+//     price_data:{
+//         currency:'USD',
+//         unit_amount:subTotal - ((subTotal * req.body.coupon?.amount ||0 )/100),
+//         product_data:{
+//             name:user.userName,
+//         },
+//     },
+//     quantity:1
+// }],
+// mode:'payment',
+// success_url: `http://www.facebook.com`,
+// cancel_url: `http://www.youtube.com`,
+// })
 const order = await orderModel.create({
     userId:req.user._id,
     products:finalProductList,
@@ -82,10 +84,26 @@ if(req.body.coupon){
     }
 })
 }
-
-  if(order) await cartModel.findOneAndUpdate({userId:req.user._id},{products:[]},{new:true});
-      
-return res.json(order);
+  if(order) {
+const invoice = {
+  shipping: {
+    name: user.userName,
+    address:order.Address,
+    city: "jenin",
+    state: "CA",
+    country: "palestine",
+    postal_code: 94111,
+    phone:order.phoneNumber
+  },
+  items:order.products,
+  subtotal: order.finalPrice,
+  invoice_nr: order._id
+};
+ createInvoice(invoice, "invoice.pdf");
+let cart =  await cartModel.findOneAndUpdate({userId:req.user._id},{products:[]},{new:true});
+return res.json({message:"success",order});
+}
+return res.json(new errorApp("the order not completed",404));
 }
 
 export const getAllOrders = async(req,res)=>{
